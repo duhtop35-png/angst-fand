@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>🐉 ANGST — Фандомная соцсеть</title>
+    <style>
+        @keyframes likePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .liked { animation: likePop 0.3s; }
+        .new-post { animation: fadeIn 0.5s; }
+        
+        #onlinePanel { transition: all 0.3s; }
+        #toggleOnline { cursor: pointer; }
+        
+        .loader {
+            border: 4px solid #334155;
+            border-top: 4px solid #7c3aed;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body style="
+    background: linear-gradient(135deg, #0c1b33 0%, #1a1033 100%);
+    color: #e2e8f0;
+    font-family: 'Arial', sans-serif;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+">
+
+<!-- ШАПКА -->
+<div style="text-align: center; margin-bottom: 40px; padding: 20px 0; border-bottom: 2px solid #7c3aed;">
+    <h1 style="color: #a78bfa; font-size: 3em; margin: 0; text-shadow: 0 0 15px rgba(167, 139, 250, 0.5);">
+        🐉 ANGST
+    </h1>
+    <p style="color: #c4b5fd; margin-top: 10px; font-size: 18px;">
+        "И мы изменим мир к лучшему. Вместе."
+    </p>
+</div>
+
+<!-- ПАНЕЛЬ АВТОРИЗАЦИИ -->
+<div id="authPanel">
+    <div style="
+        background: rgba(30, 41, 59, 0.9);
+        border-radius: 25px;
+        padding: 30px;
+        margin-bottom: 30px;
+        border: 2px solid #7c3aed;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    ">
+        <h2 style="color: #a78bfa; margin-bottom: 10px;">🔐 Добро пожаловать в ANGST</h2>
+        <p style="color: #94a3b8; margin-bottom: 30px;">Фандомная социальная сеть</p>
+        
+        <!-- ФОРМА ВХОДА -->
+        <div id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Ваш email" style="
+                width: 100%;
+                padding: 15px;
+                margin: 10px 0;
+                border: 2px solid #475569;
+                border-radius: 15px;
+                background: rgba(51, 65, 85, 0.7);
+                color: white;
+                font-size: 16px;
+                transition: all 0.3s;
+            " onfocus="this.style.borderColor='#7c3aed'">
+            
+            <input type="password" id="loginPassword" placeholder="Пароль" style="
+                width: 100%;
+                padding: 15px;
+                margin: 10px 0 25px 0;
+                border: 2px solid #475569;
+                border-radius: 15px;
+                background: rgba(51, 65, 85, 0.7);
+                color: white;
+                font-size: 16px;
+                transition: all 0.3s;
+            " onfocus="this.style.borderColor='#7c3aed'">
+            
+            <button onclick="loginUser()" style="
+                background: linear-gradient(135deg, #7c3aed, #a78bfa);
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                border-radius: 50px;
+                font-weight: bold;
+                font-size: 16px;
+                cursor: pointer;
+                transition: all 0.3s;
+                width: 100%;
+                margin-bottom: 15px;
+            " onmouseover="this.style.transform='translateY(-2px)'"
+            onmouseout="this.style.transform='translateY(0)'">
+                Войти
+            </button>
+            
+            <button onclick="showRegisterForm()" style="
+                background: none;
+                border: 2px solid #7c3aed;
+                color: #a78bfa;
+                padding: 15px 40px;
+                border-radius: 50px;
+                cursor: pointer;
+                transition: all 0.3s;
+                width: 100%;
+            " onmouseover="this.style.backgroundColor='rgba(124, 58, 237, 0.1)'"
+            onmouseout="this.style.backgroundColor='transparent'">
+                Создать аккаунт
+            </button>
+        </div>
+        
+        <!-- ФОРМА РЕГИСТРАЦИИ -->
+        <div id="registerForm" style="display: none;">
+            <input type="text" id="registerUsername" placeholder="Имя пользователя" style="
+                width: 100%;
+                padding: 15px;
+                margin: 10px 0;
+                border: 2px solid #475569;
+                border-radius: 15px;
+                background: rgba(51, 65, 85, 0.7);
+                color: white;
+                font-size: 16px;
+            ">
+            
+            <input type="email" id="registerEmail" placeholder="Email" style="
+                width: 100%;
+                padding: 15px;
+                margin: 10px 0;
+                border: 2px solid #475569;
+                border-radius: 15px;
+                background: rgba(51, 65, 85, 0.7);
+                color: white;
+                font-size: 16px;
+            ">
+            
+            <input type="password" id="registerPassword" placeholder="Пароль (минимум 6 символов)" style="
+                width: 100%;
+                padding: 15px;
+                margin: 10px 0 25px 0;
+                border: 2px solid #475569;
+                border-radius: 15px;
+                background: rgba(51, 65, 85, 0.7);
+                color: white;
+                font-size: 16px;
+            ">
+            
+            <button onclick="registerUser()" style="
+                background: linear-gradient(135deg, #10b981, #34d399);
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                border-radius: 50px;
+                font-weight: bold;
+                font-size: 16px;
+                cursor: pointer;
+                width: 100%;
+                margin-bottom: 15px;
+            ">
+                Зарегистрироваться
+            </button>
+            
+            <button onclick="showLoginForm()" style="
+                background: none;
+                border: 2px solid #475569;
+                color: #94a3b8;
+                padding: 15px 40px;
+                border-radius: 50px;
+                cursor: pointer;
+                width: 100%;
+            ">
+                ← Назад ко входу
+            </button>
+        </div>
+    </div>
+    
+    <div style="text-align: center; color: #64748b; margin-top: 30px;">
+        <div style="font-size: 14px; margin-bottom: 10px;">После регистрации сможешь:</div>
+        <div style="display: flex; justify-content: center; gap: 20px; font-size: 12px;">
+            <span>✍️ Писать посты</span>
+            <span>❤️ Ставить лайки</span>
+            <span>💬 Комментировать</span>
+            <span>🔁 Делать репосты</span>
+        </div>
+    </div>
+</div>
+
+<!-- ПАНЕЛЬ ПОЛЬЗОВАТЕЛЯ (после входа) -->
+<div id="userPanel" style="display: none;">
+    <!-- Шапка пользователя -->
+    <div style="
+        background: rgba(30, 41, 59, 0.8);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 2px solid #7c3aed;
+    ">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div id="userAvatar" style="
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #7c3aed, #a78bfa);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                color: white;
+            ">
+                👤
+            </div>
+            <div>
+                <div id="userName" style="color: #a78bfa; font-weight: bold; font-size: 20px;">
+                    ...
+                </div>
+                <div id="userEmail" style="color: #94a3b8; font-size: 14px;">
+                    ...
+                </div>
+            </div>
+        </div>
+        <button onclick="logoutUser()" style="
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        " onmouseover="this.style.backgroundColor='rgba(239, 68, 68, 0.3)'"
+        onmouseout="this.style.backgroundColor='rgba(239, 68, 68, 0.2)'">
+            Выйти
+        </button>
+    </div>
+    
+    <!-- ПАНЕЛЬ СОЗДАНИЯ ПОСТА -->
+    <div id="postSection" style="
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 25px;
+        padding: 25px;
+        margin-bottom: 40px;
+        border: 2px solid #7c3aed;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    ">
+        <textarea 
+            id="postInput"
+            placeholder="О чем крипит твой фандом сегодня? Используй #спойлеры #фанфики #арт"
+            style="
+                width: 100%;
+                height: 120px;
+                padding: 20px;
+                border: 2px solid #8b5cf6;
+                border-radius: 20px;
+                background: rgba(51, 65, 85, 0.7);
+                color: white;
+                font-size: 16px;
+                font-family: inherit;
+                resize: vertical;
+                transition: all 0.3s;
+            "
+            onfocus="this.style.borderColor='#a78bfa'; this.style.boxShadow='0 0 0 3px rgba(167, 139, 250, 0.3)'"
+            onblur="this.style.borderColor='#8b5cf6'; this.style.boxShadow='none'"
+        ></textarea>
+        
+        <div id="imagePreview" style="margin-top: 15px; display: none;"></div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="attachImageToPost()"
+                    style="
+                        background: rgba(139, 92, 246, 0.2);
+                        border: 1px solid #8b5cf6;
+                        color: #c4b5fd;
+                        padding: 10px 20px;
+                        border-radius: 50px;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: all 0.2s;
+                    "
+                    onmouseover="this.style.backgroundColor='rgba(139, 92, 246, 0.4)'"
+                    onmouseout="this.style.backgroundColor='rgba(139, 92, 246, 0.2)'">
+                    📎 Картинка
+                </button>
+                
+                <div id="charCount" style="
+                    color: #a78bfa;
+                    padding: 10px 20px;
+                    background: rgba(167, 139, 250, 0.1);
+                    border-radius: 50px;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                ">
+                    280 символов
+                </div>
+            </div>
+            
+            <button 
+                id="postButton"
+                onclick="addNewPost()"
+                style="
+                    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+                    color: white;
+                    border: none;
+                    padding: 15px 40px;
+                    border-radius: 50px;
+                    font-weight: bold;
+                    font-size: 18px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+                "
+                onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(124, 58, 237, 0.6)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(124, 58, 237, 0.4)'">
+                🚀 Опубликовать
+            </button>
+        </div>
+    </div>
+    
+    <!-- ФИЛЬТРЫ -->
+    <div style="
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        overflow-x: auto;
+        padding: 10px 0;
+    ">
+        <button onclick="filterPosts('all')" id="filterAll"
+            style="
+                background: #7c3aed;
+                color: white;
+                border: none;
+                padding: 10px 25px;
+                border-radius: 50px;
+                cursor: pointer;
+                white-space: nowrap;
+            ">
+            Все посты
+        </button>
+        <button onclick="filterPosts('spoilers')" id="filterSpoilers"
+            style="
+                background: rgba(239, 68, 68, 0.2);
+                border: 1px solid #ef4444;
+                color: #fca5a5;
+                padding: 10px 25px;
+                border-radius: 50px;
+                cursor: pointer;
+                white-space: nowrap;
+            ">
+            ⚠️ Спойлеры
+        </button>
+        <button onclick="filterPosts('fics')" id="filterFics"
+            style="
+                background: rgba(139, 92, 246, 0.2);
+                border: 1px solid #8b5cf6;
+                color: #c4b5fd;
+                padding: 10px 25px;
+                border-radius: 50px;
+                cursor: pointer;
+                white-space: nowrap;
+            ">
+            📖 Фанфики
+        </button>
+        <button onclick="filterPosts('art')" id="filterArt"
+            style="
+                background: rgba(16, 185, 129, 0.2);
+                border: 1px solid #10b981;
+                color: #6ee7b7;
+                padding: 10px 25px;
+                border-radius: 50px;
+                cursor: pointer;
+                white-space: nowrap;
+            ">
+            🎨 Арты
+        </button>
+    </div>
+    
+    <!-- ЛЕНТА ПОСТОВ -->
+    <div id="postsContainer">
+        <div class="loader"></div>
+        <div style="text-align: center; color: #64748b; margin-top: 10px;">
+            Загрузка...
+        </div>
+    </div>
+</div>
+
+<!-- ПАНЕЛЬ ОНЛАЙН -->
+<div id="onlinePanel" style="
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(10px);
+    border: 2px solid #8b5cf6;
+    border-radius: 20px;
+    padding: 20px;
+    width: 280px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+">
+    <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #475569;
+    ">
+        <div style="color: #a78bfa; font-weight: bold; font-size: 18px;">
+            👥 Онлайн: <span id="onlineCount" style="color: #10b981;">1</span>
+        </div>
+        <div onclick="toggleOnlinePanel()" style="color: #94a3b8; font-size: 24px; cursor: pointer; user-select: none;">
+            ×
+        </div>
+    </div>
+    
+    <div id="usersList" style="font-size: 14px; color: #cbd5e1;">
+        <div>🐲 <strong style="color: #a78bfa;">Ты</strong></div>
+    </div>
+</div>
+
+<!-- ПОДВАЛ -->
+<div style="
+    text-align: center;
+    margin-top: 60px;
+    padding: 30px 0;
+    color: #64748b;
+    font-size: 14px;
+    border-top: 1px solid #334155;
+">
+    <div>🐉 ANGST v2.0 | Система аккаунтов | Firebase</div>
+</div>
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<!-- НАШ КОНФИГ С КЛЮЧАМИ (БЕЗ КОММИТА В GITHUB) -->
+<script src="firebase-config.js"></script>
+
+<script>
+// ================= FIREBASE КОНФИГУРАЦИЯ =================
+// Ключи теперь в отдельном файле firebase-config.js
+// Инициализация Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ================= ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =================
+let currentUser = null;
+let userData = null;
+let posts = [];
+let currentImageUrl = null;
+
+// ================= ФУНКЦИИ АВТОРИЗАЦИИ =================
+function showRegisterForm() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+}
+
+function showLoginForm() {
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+}
+
+function registerUser() {
+    const username = document.getElementById('registerUsername').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    
+    if (!username || !email || !password) {
+        alert('Заполни все поля!');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('Пароль должен быть минимум 6 символов');
+        return;
+    }
+    
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            currentUser = userCredential.user;
+            
+            // Сохраняем данные пользователя
+            return db.collection("users").doc(currentUser.uid).set({
+                username: username,
+                email: email,
+                avatar: "👤",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        })
+        .then(() => {
+            userData = {
+                username: username,
+                email: email,
+                avatar: "👤"
+            };
+            updateUI();
+            alert('🎉 Регистрация успешна!');
+            showLoginForm();
+        })
+        .catch((error) => {
+            alert('Ошибка: ' + error.message);
+        });
+}
+
+function loginUser() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        alert('Введите email и пароль');
+        return;
+    }
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            currentUser = userCredential.user;
+            return db.collection("users").doc(currentUser.uid).get();
+        })
+        .then((doc) => {
+            if (doc.exists) {
+                userData = doc.data();
+                updateUI();
+                alert('✅ Вход выполнен!');
+            }
+        })
+        .catch((error) => {
+            alert('Ошибка: ' + error.message);
+        });
+}
+
+function logoutUser() {
+    auth.signOut()
+        .then(() => {
+            currentUser = null;
+            userData = null;
+            posts = [];
+            updateUI();
+            alert('Вы вышли из аккаунта');
+        })
+        .catch((error) => {
+            alert('Ошибка: ' + error.message);
+        });
+}
+
+function updateUI() {
+    if (currentUser && userData) {
+        // Показываем панель пользователя
+        document.getElementById('authPanel').style.display = 'none';
+        document.getElementById('userPanel').style.display = 'block';
+        
+        // Заполняем данные
+        document.getElementById('userName').textContent = userData.username;
+        document.getElementById('userEmail').textContent = currentUser.email;
+        document.getElementById('userAvatar').textContent = userData.avatar || '👤';
+        
+        // Загружаем посты
+        loadPosts();
+    } else {
+        // Показываем форму входа
+        document.getElementById('authPanel').style.display = 'block';
+        document.getElementById('userPanel').style.display = 'none';
+        document.getElementById('postsContainer').innerHTML = `
+            <div style="text-align: center; color: #64748b; padding: 50px 20px;">
+                <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
+                <div style="font-size: 18px;">Войдите, чтобы увидеть ленту</div>
+            </div>
+        `;
+    }
+}
+
+// Слушатель изменения состояния авторизации
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        currentUser = user;
+        db.collection("users").doc(user.uid).get()
+            .then((doc) => {
+                if (doc.exists) {
+                    userData = doc.data();
+                    updateUI();
+                }
+            });
+    } else {
+        currentUser = null;
+        userData = null;
+        updateUI();
+    }
+});
+
+// ================= ФУНКЦИИ ПОСТОВ =================
+function loadPosts() {
+    if (!currentUser) return;
+    
+    db.collection("posts").orderBy("createdAt", "desc").get()
+        .then((querySnapshot) => {
+            posts = [];
+            querySnapshot.forEach((doc) => {
+                posts.push({ id: doc.id, ...doc.data() });
+            });
+            renderPosts();
+        })
+        .catch((error) => {
+            console.error("Ошибка загрузки постов:", error);
+        });
+}
+
+function addNewPost() {
+    if (!currentUser || !userData) {
+        alert('Сначала войдите!');
+        return;
+    }
+    
+    const textarea = document.getElementById('postInput');
+    const text = textarea.value.trim();
+    
+    if (!text) {
+        alert('Напишите что-нибудь!');
+        return;
+    }
+    
+    if (text.length > 280) {
+        alert(`Слишком длинно! ${text.length}/280 символов`);
+        return;
+    }
+    
+    const newPost = {
+        text: text,
+        authorId: currentUser.uid,
+        authorName: userData.username,
+        authorAvatar: userData.avatar || "👤",
+        likes: 0,
+        comments: [],
+        image: currentImageUrl,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+    };
+    
+    db.collection("posts").add(newPost)
+        .then(() => {
+            textarea.value = '';
+            if (currentImageUrl) {
+                removeImage();
+            }
+            updateCharCount();
+            loadPosts();
+            
+            // Анимация кнопки
+            const btn = document.getElementById('postButton');
+            btn.innerHTML = '✅ Опубликовано!';
+            setTimeout(() => btn.innerHTML = '🚀 Опубликовать', 1000);
+        })
+        .catch((error) => {
+            alert('Ошибка: ' + error.message);
+        });
+}
+
+function attachImageToPost() {
+    const url = prompt('Ссылка на картинку (https://):');
+    if (!url) return;
+    
+    if (!url.startsWith('http')) {
+        alert('Нужна ссылка с https://');
+        return;
+    }
+    
+    currentImageUrl = url;
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = `
+        <div style="background: rgba(51, 65, 85, 0.8); border-radius: 15px; padding: 15px; border: 2px dashed #8b5cf6;">
+            <div style="color: #a78bfa; margin-bottom: 10px;">📎 Прикреплено:</div>
+            <img src="${url}" style="max-width: 100px; border-radius: 10px;">
+            <button onclick="removeImage()" style="margin-left: 10px; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px;">
+                Удалить
+            </button>
+        </div>
+    `;
+    preview.style.display = 'block';
+}
+
+function removeImage() {
+    currentImageUrl = null;
+    document.getElementById('imagePreview').style.display = 'none';
+}
+
+function updateCharCount() {
+    const textarea = document.getElementById('postInput');
+    const charCount = document.getElementById('charCount');
+    if (!textarea || !charCount) return;
+    
+    const remaining = 280 - textarea.value.length;
+    let color = '#a78bfa';
+    let text = `${remaining} символов`;
+    
+    if (remaining < 20) {
+        color = '#ef4444';
+        text = `⚠️ Осталось ${remaining}`;
+    } else if (remaining < 50) {
+        color = '#f59e0b';
+        text = `Осталось ${remaining}`;
+    }
+    
+    charCount.innerHTML = text;
+    charCount.style.color = color;
+}
+
+function filterPosts(type) {
+    // Простая фильтрация
+    let filtered = posts;
+    if (type === 'spoilers') filtered = posts.filter(p => p.text && p.text.includes('#спойлеры'));
+    else if (type === 'fics') filtered = posts.filter(p => p.text && p.text.includes('#фанфики'));
+    else if (type === 'art') filtered = posts.filter(p => p.text && p.text.includes('#арт'));
+    
+    renderPosts(filtered);
+}
+
+function renderPosts(postsToRender = posts) {
+    const container = document.getElementById('postsContainer');
+    if (!container) return;
+    
+    if (!postsToRender || postsToRender.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; color: #64748b; padding: 60px 20px;">
+                <div style="font-size: 48px; margin-bottom: 20px;">📝</div>
+                <div style="font-size: 18px;">Пока нет постов</div>
+                <div style="color: #94a3b8; margin-top: 10px;">Напиши первый!</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = postsToRender.map(post => {
+        let borderColor = '#475569';
+        let icon = '💬';
+        
+        if (post.text && post.text.includes('#спойлеры')) {
+            borderColor = '#ef4444';
+            icon = '⚠️';
+        } else if (post.text && post.text.includes('#фанфики')) {
+            borderColor = '#8b5cf6';
+            icon = '📖';
+        } else if (post.text && post.text.includes('#арт')) {
+            borderColor = '#10b981';
+            icon = '🎨';
+        }
+        
+        const postTime = post.time || (post.createdAt && post.createdAt.toDate ? 
+            post.createdAt.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '');
+        
+        return `
+            <div class="new-post" style="
+                background: rgba(30, 41, 59, 0.8);
+                border-left: 5px solid ${borderColor};
+                border-radius: 20px;
+                margin: 25px 0;
+                padding: 25px;
+            ">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <div style="
+                        background: linear-gradient(135deg, ${borderColor}, #a78bfa);
+                        width: 50px;
+                        height: 50px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-right: 15px;
+                        font-size: 24px;
+                    ">
+                        ${post.authorAvatar || '👤'}
+                    </div>
+                    <div>
+                        <div style="font-weight: bold; color: #60a5fa; font-size: 17px;">
+                            ${post.authorName || 'Аноним'}
+                        </div>
+                        <div style="color: #94a3b8; font-size: 14px;">
+                            ${postTime}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 17px; line-height: 1.6; margin: 20px 0; color: #e2e8f0;">
+                    ${post.text || ''}
+                </div>
+                
+                ${post.image ? `
+                    <div style="margin: 20px 0;">
+                        <img src="${post.image}" style="max-width: 100%; border-radius: 15px;">
+                    </div>
+                ` : ''}
+                
+                <div style="display: flex; gap: 15px; margin-top: 25px;">
+                    <button onclick="likePost('${post.id}')" style="
+                        background: rgba(71, 85, 105, 0.3);
+                        border: 1px solid #475569;
+                        color: #94a3b8;
+                        padding: 10px 25px;
+                        border-radius: 50px;
+                        cursor: pointer;
+                    ">
+                        🤍 Лайк (${post.likes || 0})
+                    </button>
+                    <button onclick="commentOnPost('${post.id}')" style="
+                        background: rgba(71, 85, 105, 0.3);
+                        border: 1px solid #475569;
+                        color: #94a3b8;
+                        padding: 10px 25px;
+                        border-radius: 50px;
+                        cursor: pointer;
+                    ">
+                        💬 Комментировать (${post.comments ? post.comments.length : 0})
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function likePost(postId) {
+    alert('Лайк! (позже добавим логику)');
+}
+
+function commentOnPost(postId) {
+    const comment = prompt('Ваш комментарий:');
+    if (comment) {
+        alert('Комментарий добавлен!');
+    }
+}
+
+function toggleOnlinePanel() {
+    const panel = document.getElementById('onlinePanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+// ================= ИНИЦИАЛИЗАЦИЯ =================
+document.addEventListener('DOMContentLoaded', function() {
+    // Назначаем обработчик для счетчика символов
+    const postInput = document.getElementById('postInput');
+    if (postInput) {
+        postInput.addEventListener('input', updateCharCount);
+        updateCharCount();
+    }
+    
+    // Обновляем онлайн статус
+    setInterval(() => {
+        const onlineCount = document.getElementById('onlineCount');
+        if (onlineCount) {
+            const online = 1 + Math.floor(Math.random() * 5);
+            onlineCount.textContent = online;
+        }
+    }, 30000);
+});
+</script>
+
+</body>
+</html>
