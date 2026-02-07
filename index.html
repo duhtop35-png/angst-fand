@@ -207,6 +207,10 @@
             background: rgba(249, 24, 128, 0.1) !important;
         }
 
+        .action-button.liked {
+            color: #F91880 !important;
+        }
+
         /* ========== ПАНЕЛЬ СОЗДАНИЯ ПОСТА ========== */
         .create-post {
             padding: 15px 20px !important;
@@ -383,6 +387,22 @@
         .new-post {
             animation: fadeIn 0.3s ease-out !important;
         }
+
+        /* ========== CHAR COUNTER ========== */
+        .char-counter {
+            color: #71767B;
+            font-size: 13px;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: #FFD700;
+        }
+
+        .char-counter.error {
+            color: #F4212E;
+        }
     </style>
 </head>
 <body>
@@ -420,14 +440,14 @@
                 <span class="nav-text">⚙️ Настройки</span>
             </div>
             
-            <button class="tweet-button">🐲 Твитнуть</button>
+            <button class="tweet-button" id="mainTweetButton">🐲 Твитнуть</button>
             
             <!-- Профиль внизу -->
             <div style="margin-top: auto; padding-top: 20px;">
                 <div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 50px; cursor: pointer;">
-                    <div style="width: 40px; height: 40px; background: #1D9BF0; border-radius: 50%;"></div>
+                    <div id="sidebarAvatar" style="width: 40px; height: 40px; background: #1D9BF0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">👤</div>
                     <div>
-                        <div style="font-weight: bold; color: #E7E9EA;">Ты</div>
+                        <div id="sidebarUsername" style="font-weight: bold; color: #E7E9EA;">Войдите</div>
                         <div style="color: #71767B; font-size: 15px;">@angst_user</div>
                     </div>
                 </div>
@@ -444,14 +464,16 @@
             <!-- ПАНЕЛЬ СОЗДАНИЯ ПОСТА -->
             <div id="createPostSection" style="display: none;">
                 <div class="create-post">
-                    <div class="post-avatar">👤</div>
+                    <div id="currentUserAvatar" class="post-avatar">👤</div>
                     <div style="flex: 1;">
                         <textarea 
                             id="postInput"
                             class="post-textarea"
                             placeholder="Что происходит?"
                             rows="3"
+                            maxlength="280"
                         ></textarea>
+                        <div class="char-counter" id="charCounter">280</div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
                             <div style="display: flex; gap: 10px;">
                                 <button class="action-button">📷</button>
@@ -474,7 +496,7 @@
             <!-- ЛЕНТА ПОСТОВ -->
             <div id="postsContainer">
                 <div style="text-align: center; padding: 100px 20px; color: #71767B;">
-                    Загрузка постов...
+                    Загрузка...
                 </div>
             </div>
         </div>
@@ -502,41 +524,29 @@
                 <div class="trends-box">
                     <div class="trends-title">Актуальные темы</div>
                     
-                    <div class="trend-item">
+                    <div class="trend-item" onclick="searchHashtag('#Bubble')">
                         <div class="trend-category">Тренды · Россия</div>
                         <div class="trend-name">#Bubble</div>
                         <div class="trend-count">15.4K постов</div>
                     </div>
                     
-                    <div class="trend-item">
+                    <div class="trend-item" onclick="searchHashtag('#ФанАрт')">
                         <div class="trend-category">Тренды · Искусство</div>
                         <div class="trend-name">#ФанАрт</div>
                         <div class="trend-count">8.2K постов</div>
                     </div>
                     
-                    <div class="trend-item">
+                    <div class="trend-item" onclick="searchHashtag('#Спойлеры')">
                         <div class="trend-category">Тренды · Обсуждение</div>
                         <div class="trend-name">#Спойлеры</div>
                         <div class="trend-count">5.7K постов</div>
                     </div>
                     
-                    <div class="trend-item">
+                    <div class="trend-item" onclick="searchHashtag('#Ведьмак')">
                         <div class="trend-category">Тренды · Фанфики</div>
                         <div class="trend-name">#Ведьмак</div>
                         <div class="trend-count">3.1K постов</div>
                     </div>
-                    
-                    <button style="
-                        color: #1D99BF0;
-                        background: none;
-                        border: none;
-                        padding: 15px 0 0 0;
-                        cursor: pointer;
-                        width: 100%;
-                        text-align: left;
-                    ">
-                        Показать ещё
-                    </button>
                 </div>
 
                 <!-- ПОДПИСКИ -->
@@ -561,18 +571,6 @@
                             Читать
                         </button>
                     </div>
-                    
-                    <button style="
-                        color: #1D9BF0;
-                        background: none;
-                        border: none;
-                        padding: 15px 0 0 0;
-                        cursor: pointer;
-                        width: 100%;
-                        text-align: left;
-                    ">
-                        Показать ещё
-                    </button>
                 </div>
 
                 <!-- ФУТЕР -->
@@ -589,12 +587,12 @@
     </div>
 
     <!-- ПАНЕЛЬ АВТОРИЗАЦИИ -->
-    <div id="authPanel" class="auth-panel" style="display: none;">
+    <div id="authPanel" class="auth-panel">
         <div class="auth-title">Войдите в ANGST</div>
         
         <div id="loginForm">
-            <input type="email" id="loginEmail" class="auth-input" placeholder="Email">
-            <input type="password" id="loginPassword" class="auth-input" placeholder="Пароль">
+            <input type="email" id="loginEmail" class="auth-input" placeholder="Email" value="test@test.com">
+            <input type="password" id="loginPassword" class="auth-input" placeholder="Пароль" value="123456">
             <button onclick="loginUser()" class="auth-button">Войти</button>
             <button onclick="showRegisterForm()" class="auth-switch">Создать аккаунт</button>
         </div>
@@ -626,6 +624,7 @@
     let currentUser = null;
     let userData = null;
     let posts = [];
+    let userLikes = new Set(); // Множество лайкнутых постов
 
     // ================= ФУНКЦИИ АВТОРИЗАЦИИ =================
     function showRegisterForm() {
@@ -696,7 +695,7 @@
                 if (doc.exists) {
                     userData = doc.data();
                     updateUI();
-                    alert('✅ Вход выполнен!');
+                    loadUserLikes(); // Загружаем лайки пользователя
                 }
             })
             .catch((error) => {
@@ -710,14 +709,15 @@
                 currentUser = null;
                 userData = null;
                 posts = [];
+                userLikes.clear();
                 updateUI();
-                alert('Вы вышли из аккаунта');
             })
             .catch((error) => {
                 alert('Ошибка: ' + error.message);
             });
     }
 
+    // ================= ОБНОВЛЕНИЕ ИНТЕРФЕЙСА =================
     function updateUI() {
         if (currentUser && userData) {
             // Показываем основной интерфейс
@@ -725,6 +725,11 @@
             document.querySelector('.container').style.display = 'flex';
             document.querySelector('.mobile-nav').style.display = 'flex';
             document.getElementById('createPostSection').style.display = 'block';
+            
+            // Обновляем сайдбар
+            document.getElementById('sidebarUsername').textContent = userData.username;
+            document.getElementById('sidebarAvatar').textContent = userData.avatar || '👤';
+            document.getElementById('currentUserAvatar').textContent = userData.avatar || '👤';
             
             // Загружаем посты
             loadPosts();
@@ -734,47 +739,72 @@
             document.querySelector('.container').style.display = 'none';
             document.querySelector('.mobile-nav').style.display = 'none';
             document.getElementById('createPostSection').style.display = 'none';
+            
+            // Сбрасываем сайдбар
+            document.getElementById('sidebarUsername').textContent = 'Войдите';
+            document.getElementById('sidebarAvatar').textContent = '👤';
         }
     }
 
-    // Слушатель изменения состояния авторизации
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
-            db.collection("users").doc(user.uid).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        userData = doc.data();
-                        updateUI();
-                    }
+    // ================= ЗАГРУЗКА ЛАЙКОВ ПОЛЬЗОВАТЕЛЯ =================
+    function loadUserLikes() {
+        if (!currentUser) return;
+        
+        db.collection("likes")
+            .where("userId", "==", currentUser.uid)
+            .get()
+            .then((querySnapshot) => {
+                userLikes.clear();
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    userLikes.add(data.postId);
                 });
-        } else {
-            currentUser = null;
-            userData = null;
-            updateUI();
-        }
-    });
+                renderPosts(); // Перерендерим посты с учётом лайков
+            })
+            .catch((error) => {
+                console.error("Ошибка загрузки лайков:", error);
+            });
+    }
 
     // ================= ФУНКЦИИ ПОСТОВ =================
     function loadPosts() {
         if (!currentUser) return;
         
-        db.collection("posts").orderBy("createdAt", "desc").limit(20).get()
+        db.collection("posts")
+            .orderBy("createdAt", "desc")
+            .limit(50)
+            .get()
             .then((querySnapshot) => {
                 posts = [];
                 querySnapshot.forEach((doc) => {
-                    posts.push({ id: doc.id, ...doc.data() });
+                    const data = doc.data();
+                    // Преобразуем Timestamp в дату
+                    const time = data.createdAt ? 
+                        new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                        'только что';
+                    
+                    posts.push({ 
+                        id: doc.id, 
+                        ...data,
+                        displayTime: time
+                    });
                 });
                 renderPosts();
             })
             .catch((error) => {
                 console.error("Ошибка загрузки постов:", error);
+                document.getElementById('postsContainer').innerHTML = `
+                    <div style="text-align: center; padding: 100px 20px; color: #71767B;">
+                        Ошибка загрузки постов
+                    </div>
+                `;
             });
     }
 
     function addNewPost() {
         if (!currentUser || !userData) {
             alert('Сначала войдите!');
+            document.getElementById('loginEmail').focus();
             return;
         }
         
@@ -799,24 +829,89 @@
             likes: 0,
             comments: [],
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            hashtags: extractHashtags(text)
         };
         
         db.collection("posts").add(newPost)
             .then(() => {
                 textarea.value = '';
+                updateCharCounter();
                 loadPosts();
                 
                 // Анимация кнопки
                 const btn = document.getElementById('postButton');
+                const originalText = btn.innerHTML;
                 btn.innerHTML = '✅ Опубликовано!';
-                setTimeout(() => btn.innerHTML = 'Твитнуть', 1000);
+                btn.style.background = '#00BA7C';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#1D9BF0';
+                }, 2000);
             })
             .catch((error) => {
                 alert('Ошибка: ' + error.message);
             });
     }
 
+    function extractHashtags(text) {
+        const hashtags = [];
+        const words = text.split(' ');
+        words.forEach(word => {
+            if (word.startsWith('#') && word.length > 1) {
+                hashtags.push(word.toLowerCase());
+            }
+        });
+        return hashtags;
+    }
+
+    // ================= ЛАЙКИ =================
+    async function likePost(postId) {
+        if (!currentUser) {
+            alert('Войдите, чтобы ставить лайки!');
+            document.getElementById('loginEmail').focus();
+            return;
+        }
+        
+        const postRef = db.collection("posts").doc(postId);
+        const likeRef = db.collection("likes").doc(`${postId}_${currentUser.uid}`);
+        
+        try {
+            const likeDoc = await likeRef.get();
+            
+            if (likeDoc.exists) {
+                // Убираем лайк
+                await likeRef.delete();
+                await postRef.update({
+                    likes: firebase.firestore.FieldValue.increment(-1)
+                });
+                userLikes.delete(postId);
+            } else {
+                // Ставим лайк
+                await likeRef.set({
+                    userId: currentUser.uid,
+                    postId: postId,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                await postRef.update({
+                    likes: firebase.firestore.FieldValue.increment(1)
+                });
+                userLikes.add(postId);
+            }
+            
+            // Обновляем только этот пост
+            const postIndex = posts.findIndex(p => p.id === postId);
+            if (postIndex !== -1) {
+                const post = posts[postIndex];
+                post.likes = likeDoc.exists ? (post.likes || 1) - 1 : (post.likes || 0) + 1;
+                renderPosts();
+            }
+        } catch (error) {
+            console.error("Ошибка лайка:", error);
+            alert('Ошибка при установке лайка');
+        }
+    }
+
+    // ================= РЕНДЕРИНГ ПОСТОВ =================
     function renderPosts() {
         const container = document.getElementById('postsContainer');
         if (!container) return;
@@ -832,34 +927,106 @@
             return;
         }
         
-        container.innerHTML = posts.map(post => `
-            <div class="post new-post">
-                <div class="post-header">
-                    <div class="post-avatar">${post.authorAvatar || '👤'}</div>
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 5px;">
-                            <div class="post-author">${post.authorName || 'Аноним'}</div>
-                            <div class="post-time">· ${post.time || ''}</div>
+        container.innerHTML = posts.map(post => {
+            const isLiked = userLikes.has(post.id);
+            const likeButtonClass = isLiked ? 'action-button like liked' : 'action-button like';
+            const likeIcon = isLiked ? '❤️' : '🤍';
+            
+            // Подсветка хештегов
+            let content = post.text || '';
+            content = content.replace(/#(\w+)/g, '<span style="color: #1D9BF0;">#$1</span>');
+            
+            return `
+                <div class="post new-post" id="post-${post.id}">
+                    <div class="post-header">
+                        <div class="post-avatar">${post.authorAvatar || '👤'}</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <div class="post-author">${post.authorName || 'Аноним'}</div>
+                                <div class="post-time">· ${post.displayTime || 'только что'}</div>
+                            </div>
                         </div>
                     </div>
+                    
+                    <div class="post-content">
+                        ${content}
+                    </div>
+                    
+                    <div class="post-actions">
+                        <button class="action-button" onclick="commentOnPost('${post.id}')">
+                            💬 ${post.comments ? post.comments.length : 0}
+                        </button>
+                        <button class="action-button" onclick="repost('${post.id}')">
+                            🔁 0
+                        </button>
+                        <button class="${likeButtonClass}" onclick="likePost('${post.id}')">
+                            ${likeIcon} ${post.likes || 0}
+                        </button>
+                        <button class="action-button" onclick="sharePost('${post.id}')">
+                            📤
+                        </button>
+                    </div>
                 </div>
-                
-                <div class="post-content">
-                    ${post.text || ''}
-                </div>
-                
-                ${post.image ? `
-                    <img src="${post.image}" class="post-image">
-                ` : ''}
-                
-                <div class="post-actions">
-                    <button class="action-button">💬 ${post.comments ? post.comments.length : 0}</button>
-                    <button class="action-button">🔁 0</button>
-                    <button class="action-button like">🤍 ${post.likes || 0}</button>
-                    <button class="action-button">📤</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+    }
+
+    // ================= ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =================
+    function commentOnPost(postId) {
+        if (!currentUser) {
+            alert('Войдите, чтобы комментировать!');
+            return;
+        }
+        const comment = prompt('Ваш комментарий:');
+        if (comment) {
+            alert('Комментарий добавлен! (функция в разработке)');
+        }
+    }
+
+    function repost(postId) {
+        alert('Репост! (функция в разработке)');
+    }
+
+    function sharePost(postId) {
+        const url = window.location.href.split('?')[0] + '?post=' + postId;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Ссылка на пост скопирована!');
+        });
+    }
+
+    function searchHashtag(hashtag) {
+        if (!currentUser) {
+            alert('Войдите, чтобы искать!');
+            return;
+        }
+        document.getElementById('postInput').value = hashtag + ' ';
+        document.getElementById('postInput').focus();
+    }
+
+    // ================= СЧЁТЧИК СИМВОЛОВ =================
+    function updateCharCounter() {
+        const textarea = document.getElementById('postInput');
+        const counter = document.getElementById('charCounter');
+        if (!textarea || !counter) return;
+        
+        const remaining = 280 - textarea.value.length;
+        counter.textContent = remaining;
+        counter.className = 'char-counter';
+        
+        if (remaining < 0) {
+            counter.classList.add('error');
+        } else if (remaining < 20) {
+            counter.classList.add('warning');
+        }
+        
+        const postButton = document.getElementById('postButton');
+        if (remaining < 0 || remaining === 280) {
+            postButton.disabled = true;
+            postButton.style.opacity = '0.5';
+        } else {
+            postButton.disabled = false;
+            postButton.style.opacity = '1';
+        }
     }
 
     // ================= ИНИЦИАЛИЗАЦИЯ =================
@@ -867,53 +1034,67 @@
         // Скрываем контейнер до авторизации
         document.querySelector('.container').style.display = 'none';
         
-        // Показываем панель авторизации
-        document.getElementById('authPanel').style.display = 'block';
-        
-        // Если уже авторизован - сразу показываем интерфейс
-        if (auth.currentUser) {
-            currentUser = auth.currentUser;
-            db.collection("users").doc(currentUser.uid).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        userData = doc.data();
-                        updateUI();
-                    }
-                });
+        // Настройка счётчика символов
+        const postInput = document.getElementById('postInput');
+        if (postInput) {
+            postInput.addEventListener('input', updateCharCounter);
+            updateCharCounter();
         }
-    });
+        
+        // Кнопка "Твитнуть" в левой панели
+        document.getElementById('mainTweetButton').addEventListener('click', function() {
+            if (!currentUser) {
+                alert('Войдите, чтобы писать твиты!');
+                document.getElementById('loginEmail').focus();
+                return;
+            }
+            
+            document.getElementById('postInput').focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Мобильная навигация
+        document.querySelectorAll('.mobile-nav-button').forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                if (!currentUser) {
+                    alert('Сначала войдите!');
+                    return;
+                }
+                
+                const actions = [
+                    () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+                    () => alert('Поиск (в разработке)'),
+                    () => document.getElementById('postInput').focus(),
+                    () => alert('Уведомления (в разработке)'),
+                    () => alert('Профиль (в разработке)')
+                ];
+                actions[index]();
+            });
+        });
 
-    // Обработчики для мобильной навигации
-    document.querySelectorAll('.mobile-nav-button').forEach((btn, index) => {
-        btn.addEventListener('click', () => {
-            const actions = ['Главная', 'Поиск', 'Создать', 'Уведомления', 'Профиль'];
-            alert(actions[index]);
+        // Проверяем авторизацию при загрузке
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                db.collection("users").doc(user.uid).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            userData = doc.data();
+                            updateUI();
+                            loadUserLikes();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Ошибка загрузки пользователя:", error);
+                    });
+            } else {
+                currentUser = null;
+                userData = null;
+                userLikes.clear();
+                updateUI();
+            }
         });
     });
-
-    // Кнопка "Твитнуть" в левой панели
-    document.querySelector('.tweet-button').addEventListener('click', () => {
-        if (!currentUser) {
-            alert('Сначала войдите!');
-            return;
-        }
-        document.getElementById('postInput').focus();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-        // Реальная кнопка твита
-document.querySelector('.tweet-button').addEventListener('click', function() {
-    if (!currentUser) {
-        alert('Войдите, чтобы писать твиты!');
-        document.getElementById('loginEmail').focus();
-        return;
-    }
-    
-    // Показываем панель создания
-    document.getElementById('createPostSection').style.display = 'block';
-    document.getElementById('postInput').focus();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
     </script>
 </body>
 </html>
-
