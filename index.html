@@ -900,6 +900,20 @@
         document.getElementById('postInput').focus();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+        // Реальная кнопка твита
+document.querySelector('.tweet-button').addEventListener('click', function() {
+    if (!currentUser) {
+        alert('Войдите, чтобы писать твиты!');
+        document.getElementById('loginEmail').focus();
+        return;
+    }
+    
+    // Показываем панель создания
+    document.getElementById('createPostSection').style.display = 'block';
+    document.getElementById('postInput').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
     </script>
 </body>
 </html>
+
